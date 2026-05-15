@@ -13,19 +13,34 @@
 # importación de bibliotecas
 import os
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg") # Renderizado sin pantalla
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
+# -----------------------Rutas---------------
 # Generando ruta base (raíz/scrips)
-BASE_DIR= os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #Ruta del archivo datos.csv
 RUTA_CSV = os.path.join(BASE_DIR, "datos", "datos.csv")
 
+#Ruta resultado grafico_ventas.png
+RUTA_GRAF = os.path.join(BASE_DIR, "resultados", "grafico_ventas.png")
 
+# ----------- Colores -------------
+COLOR_PRINCIPAL = "#4F81BD"
+COLOR_ACENTO    = "#C0504D"
+COLOR_FONDO     = "#F5F5F5"
+
+#-----------------------------------
 MESES = {
     1: "Enero", 2: "Febrero", 3: "Marzo",    4: "Abril",
     5: "Mayo",  6: "Junio",   7: "Julio",    8: "Agosto",
     9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
 }
+
+
 
 def leer_csv(ruta:str) -> pd.DataFrame:
 # lee un archivo csv y retorna una lista de directorios.
@@ -63,9 +78,25 @@ def reporte_ventas_por_mes(datos: pd.DataFrame) -> pd.DataFrame:
         .reset_index().sort_values('mes')
     )
 
-    
-
     return por_mes
+
+def generar_grafico(datos:pd.DataFrame, por_mes:pd.DataFrame, ruta_salida:str) -> None:
+
+    #creación del lienzo matplotlib
+    fig, ax = plt.subplots(figsize=(16, 6), facecolor=COLOR_FONDO)
+    
+    # Dibujo de linea y el area sombreada
+    ax.plot(datos['sales_date'],datos['sales_amount'], color=COLOR_PRINCIPAL, linewidth=1.1, alpha=0.9)
+    ax.fill_between(datos['sales_date'], datos['sales_amount'], alpha=0.12, color=COLOR_PRINCIPAL)
+
+
+
+    # exportación de imagen
+    plt.tight_layout()
+    plt.savefig(ruta_salida, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f'\n Gráfico exportando en: {ruta_salida}')
+
 #
 if __name__=="__main__":
     print(f'Análisis de ventas {RUTA_CSV}')
@@ -73,7 +104,7 @@ if __name__=="__main__":
         datos = leer_csv(RUTA_CSV)
         reporte_ventas_totales(datos)
         por_mes=reporte_ventas_por_mes(datos)
-        print(por_mes)
+        generar_grafico(datos,por_mes,RUTA_GRAF)
 
     except FileNotFoundError as e:
         print(f'ERROR {e}')

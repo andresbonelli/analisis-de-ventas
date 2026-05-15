@@ -222,3 +222,7 @@ __marimo__/
 
 #excel
 .xlsx
+
+
+#vscode
+.vscode
